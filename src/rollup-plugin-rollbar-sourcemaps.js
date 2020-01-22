@@ -45,7 +45,7 @@ export default function rollbarSourcemaps({
       const entryWithMap = Object.entries(bundle).find((entry) => entry[1].map);
       if (!entryWithMap) {
         if (!silent) {
-          console.log('Failed to upload sourcemaps - I couldn\'t find any!');
+          this.warn({ message: 'Failed to upload sourcemaps - I couldn\'t find any!', code: 'NOT_THIS' });
         }
         return;
       }
