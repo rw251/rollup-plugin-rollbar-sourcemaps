@@ -1,8 +1,8 @@
 {
   "name": "rollup-plugin-rollbar-sourcemaps",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A Rollup plugin to upload sourcemaps to Rollbar",
+  "main": "./dist/rollup-plugin-rollbar-sourcemaps.js",
   "scripts": {
     "clean": "rimraf dist && rimraf coverage.lcov",
     "lint": "eslint ./src --ext .js",
@@ -16,7 +16,7 @@
     "version:amend": "cross-var git commit --amend -m \"Release v$npm_package_version\""
   },
   "keywords": [],
-  "author": "",
+  "author": "Richard Williams <1234richardwilliams@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.8.3",
@@ -31,9 +31,11 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
     "expect": "^25.1.0",
-    "form-data": "^3.0.0",
     "jest": "^25.1.0",
     "rimraf": "^3.0.0",
     "rollup": "^1.29.1"
+  },
+  "dependencies": {
+    "form-data": "^3.0.0"
   }
 }
