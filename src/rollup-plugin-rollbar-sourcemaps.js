@@ -1,6 +1,6 @@
 // Custom rollup plugin for uploading rollbar deploys
 import FormData from 'form-data';
-import { Readable } from 'stream';
+import { ROLLBAR_ENDPOINT } from './constants';
 
 const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => new Promise((resolve, reject) => {
   form.submit(rollbarEndpoint, (err, response) => {
@@ -30,7 +30,7 @@ export default function rollbarSourcemaps({
   version,
   baseUrl,
   silent = false,
-  rollbarEndpoint = 'https://api.rollbar.com/api/1/sourcemaps',
+  rollbarEndpoint = ROLLBAR_ENDPOINT,
 }) {
   return {
     localProps: {
