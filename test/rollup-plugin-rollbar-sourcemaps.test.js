@@ -3,7 +3,7 @@ import { join } from 'path';
 import rollbarSourcemaps from '../src/rollup-plugin-rollbar-sourcemaps';
 import { ROLLBAR_ENDPOINT } from '../src/constants';
 
-process.chdir(join(__dirname, 'fixtures'));
+// process.chdir(join(__dirname, 'fixtures'));
 
 describe('rollup-plugin-rollbar-deploy', function() {
   let rollupPlugin;
