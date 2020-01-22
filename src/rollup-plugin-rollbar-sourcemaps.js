@@ -1,5 +1,6 @@
 // Custom rollup plugin for uploading rollbar deploys
 import FormData from 'form-data';
+import { Readable } from 'stream';
 
 const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => new Promise((resolve, reject) => {
   form.submit(rollbarEndpoint, (err, response) => {
@@ -26,28 +27,39 @@ const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => new Promise((res
 
 export default function rollbarSourcemaps({
   accessToken,
-  revision,
-  environment,
-  localUsername,
+  version,
+  baseUrl,
   silent = false,
   rollbarEndpoint = 'https://api.rollbar.com/api/1/sourcemaps',
 }) {
   return {
     localProps: {
       accessToken,
-      revision,
-      environment,
-      localUsername,
+      version,
+      baseUrl,
       silent,
       rollbarEndpoint
     },
     name: 'rollup-plugin-rollbar-sourcemaps',
-    async writeBundle() {
+    async writeBundle(bundle) {
+      const entryWithMap = Object.entries(bundle).find((entry) => entry[1].map);
+      if (!entryWithMap) {
+        if (!silent) {
+          console.log('Failed to upload sourcemaps - I couldn\'t find any!');
+        }
+        return;
+      }
+
+      const sourceMapFileBuffer = Buffer.from(JSON.stringify(entryWithMap[1].map), 'utf8');
+
       const form = new FormData();
-      if (localUsername) form.append('local_username', localUsername);
+      form.append('source_map', sourceMapFileBuffer, {
+        filename: `${entryWithMap[1].fileName}.map`,
+        contentType: 'application/octet-stream',
+      });
       form.append('access_token', accessToken);
-      form.append('revision', revision);
-      form.append('environment', environment);
+      form.append('version', version);
+      form.append('minified_url', `${baseUrl}${entryWithMap[1].fileName}`);
 
       await submitSourcemaps({ rollbarEndpoint, form, silent });
     },
