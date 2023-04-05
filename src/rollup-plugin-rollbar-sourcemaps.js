@@ -2,28 +2,31 @@
 import FormData from 'form-data';
 import { ROLLBAR_ENDPOINT } from './constants';
 
-const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => new Promise((resolve, reject) => {
-  form.submit(rollbarEndpoint, (err, response) => {
-    if (err) return reject(err);
-    if (response.statusCode === 200) {
-      if (!silent) {
-        console.log('Sourcemaps successfully uploaded to Rollbar.');
+const submitSourcemaps = ({ rollbarEndpoint, silent, form }) =>
+  new Promise((resolve, reject) => {
+    form.submit(rollbarEndpoint, (err, response) => {
+      if (err) return reject(err);
+      if (response.statusCode === 200) {
+        if (!silent) {
+          console.log('Sourcemaps successfully uploaded to Rollbar.');
+        }
+        return resolve();
       }
-      return resolve();
-    }
-    let body = [];
-    return response
-      .on('data', (chunk) => {
-        body.push(chunk);
-      })
-      .on('end', () => {
-        body = Buffer.concat(body).toString();
-        console.log('Sourcemaps failed to upload to Rollbar. The response from the api call is:');
-        console.log(body);
-        resolve();
-      });
+      let body = [];
+      return response
+        .on('data', (chunk) => {
+          body.push(chunk);
+        })
+        .on('end', () => {
+          body = Buffer.concat(body).toString();
+          console.log(
+            'Sourcemaps failed to upload to Rollbar. The response from the api call is:'
+          );
+          console.log(body);
+          resolve();
+        });
+    });
   });
-});
 
 export default function rollbarSourcemaps({
   accessToken,
@@ -38,19 +41,27 @@ export default function rollbarSourcemaps({
       version,
       baseUrl,
       silent,
-      rollbarEndpoint
+      rollbarEndpoint,
     },
     name: 'rollup-plugin-rollbar-sourcemaps',
     async writeBundle(bundle) {
-      const entryWithMap = Object.entries(bundle).find((entry) => entry[1].map);
+      const entryWithMap = Object.entries(bundle)
+        .filter((entry) => entry.length > 1 && entry[1])
+        .find((entry) => entry[1].map);
       if (!entryWithMap) {
         if (!silent) {
-          this.warn({ message: 'Failed to upload sourcemaps - I couldn\'t find any!', code: 'NOT_THIS' });
+          this.warn({
+            message: "Failed to upload sourcemaps - I couldn't find any!",
+            code: 'NOT_THIS',
+          });
         }
         return;
       }
 
-      const sourceMapFileBuffer = Buffer.from(JSON.stringify(entryWithMap[1].map), 'utf8');
+      const sourceMapFileBuffer = Buffer.from(
+        JSON.stringify(entryWithMap[1].map),
+        'utf8'
+      );
 
       const form = new FormData();
       form.append('source_map', sourceMapFileBuffer, {
