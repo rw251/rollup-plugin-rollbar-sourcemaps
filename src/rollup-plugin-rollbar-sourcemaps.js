@@ -45,10 +45,7 @@ export default function rollbarSourcemaps({
     },
     name: 'rollup-plugin-rollbar-sourcemaps',
     async writeBundle(options, bundle) {
-      const possibleEntries = Object.entries(bundle).filter(
-        (entry) => entry.length > 1 && entry[1]
-      );
-      const entryWithMap = possibleEntries.find((entry) => entry[1].map);
+      const entryWithMap = Object.entries(bundle).find((entry) => entry[1].map);
       if (!entryWithMap) {
         if (!silent) {
           this.warn({
