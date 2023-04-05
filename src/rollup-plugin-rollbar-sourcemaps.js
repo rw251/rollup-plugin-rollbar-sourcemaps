@@ -2,8 +2,8 @@
 import FormData from 'form-data';
 import { ROLLBAR_ENDPOINT } from './constants';
 
-const submitSourcemaps = ({ rollbarEndpoint, silent, form }) =>
-  new Promise((resolve, reject) => {
+const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => {
+  return new Promise((resolve, reject) => {
     form.submit(rollbarEndpoint, (err, response) => {
       if (err) return reject(err);
       if (response.statusCode === 200) {
@@ -27,6 +27,7 @@ const submitSourcemaps = ({ rollbarEndpoint, silent, form }) =>
         });
     });
   });
+};
 
 export default function rollbarSourcemaps({
   accessToken,
