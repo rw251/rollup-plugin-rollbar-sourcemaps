@@ -8,7 +8,7 @@
     "clean": "rimraf dist && rimraf coverage.lcov",
     "lint": "eslint ./src --ext .js",
     "prebuild": "npm run -s clean",
-    "build": "babel --config-file ./.babelrc src -d dist --out-file-extension .cjs",
+    "build": "babel --config-file ./.commonjs.babelrc src -d dist --out-file-extension .cjs",
     "postbuild": "babel --config-file ./.esm.babelrc src -d dist",
     "test": "jest --coverage",
     "test:watch": "jest --watch --watchPathIgnorePatterns /fixtures",
