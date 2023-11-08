@@ -8,7 +8,7 @@
     "clean": "rimraf dist && rimraf coverage.lcov",
     "lint": "eslint ./src --ext .js",
     "prebuild": "npm run -s clean",
-    "build": "babel --config-file ./.commonjs.babelrc src -d dist --out-file-extension .cjs",
+    "build": "babel --config-file ./.babelrc src -d dist --out-file-extension .cjs",
     "postbuild": "babel --config-file ./.esm.babelrc src -d dist",
     "test": "jest --coverage",
     "test:watch": "jest --watch --watchPathIgnorePatterns /fixtures",
@@ -33,7 +33,7 @@
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.0",
     "expect": "^25.1.0",
-    "jest": "^29.5.0",
+    "jest": "^29.7.0",
     "rimraf": "^3.0.0",
     "rollup": "^2.79.0"
   },
