@@ -2,30 +2,31 @@
 import FormData from 'form-data';
 import { ROLLBAR_ENDPOINT } from './constants';
 
-const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => new Promise((resolve, reject) => {
-  form.submit(rollbarEndpoint, (err, response) => {
-    if (err) return reject(err);
-    if (response.statusCode === 200) {
-      if (!silent) {
-        console.log('Sourcemaps successfully uploaded to Rollbar.');
+const submitSourcemaps = ({ rollbarEndpoint, silent, form }) =>
+  new Promise((resolve, reject) => {
+    form.submit(rollbarEndpoint, (err, response) => {
+      if (err) return reject(err);
+      if (response.statusCode === 200) {
+        if (!silent) {
+          console.log('Sourcemaps successfully uploaded to Rollbar.');
+        }
+        return resolve();
       }
-      return resolve();
-    }
-    let body = [];
-    return response
-      .on('data', (chunk) => {
-        body.push(chunk);
-      })
-      .on('end', () => {
-        body = Buffer.concat(body).toString();
-        console.log(
-          'Sourcemaps failed to upload to Rollbar. The response from the api call is:'
-        );
-        console.log(body);
-        resolve();
-      });
+      let body = [];
+      return response
+        .on('data', (chunk) => {
+          body.push(chunk);
+        })
+        .on('end', () => {
+          body = Buffer.concat(body).toString();
+          console.log(
+            'Sourcemaps failed to upload to Rollbar. The response from the api call is:'
+          );
+          console.log(body);
+          resolve();
+        });
+    });
   });
-});
 
 export default function rollbarSourcemaps({
   accessToken,
