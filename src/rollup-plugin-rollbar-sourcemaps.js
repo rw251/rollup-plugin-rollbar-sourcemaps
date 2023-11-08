@@ -1,6 +1,6 @@
 // Custom rollup plugin for uploading rollbar deploys
 import FormData from 'form-data';
-import { ROLLBAR_ENDPOINT } from './constants';
+import { ROLLBAR_ENDPOINT } from './constants.js';
 
 const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => {
   return new Promise((resolve, reject) => {
