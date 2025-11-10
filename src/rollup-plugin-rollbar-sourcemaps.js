@@ -7,6 +7,9 @@ const submitSourcemaps = ({ rollbarEndpoint, silent, form }) => {
     form.submit(rollbarEndpoint, (err, response) => {
       if (err) return reject(err);
       if (response.statusCode === 200) {
+        if (typeof response.resume === 'function') {
+          response.resume();
+        }
         if (!silent) {
           console.log('Sourcemaps successfully uploaded to Rollbar.');
         }

@@ -159,4 +159,137 @@ describe('rollup-plugin-rollbar-deploy', function () {
       rollbarSourcemaps.__ResetDependency__('submitSourcemaps');
     });
   });
+
+  describe('submitSourcemaps', function () {
+    let submitSourcemaps;
+
+    beforeEach(function () {
+      submitSourcemaps = rollbarSourcemaps.__GetDependency__('submitSourcemaps');
+    });
+
+    it('should resume the response when the upload succeeds', async function () {
+      expect.assertions(2);
+      const resume = jest.fn();
+      const submit = jest.fn((endpoint, cb) => {
+        cb(null, { statusCode: 200, resume });
+      });
+
+      await submitSourcemaps({
+        rollbarEndpoint: 'https://api.rollbar.test/api/1/sourcemap',
+        silent: true,
+        form: { submit },
+      });
+
+      expect(submit).toHaveBeenCalledTimes(1);
+      expect(resume).toHaveBeenCalledTimes(1);
+    });
+
+    it('should log a success message when silent is false', async function () {
+      expect.assertions(2);
+      const resume = jest.fn();
+      const submit = jest.fn((endpoint, cb) => {
+        cb(null, { statusCode: 200, resume });
+      });
+
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      await submitSourcemaps({
+        rollbarEndpoint: 'https://api.rollbar.test/api/1/sourcemap',
+        silent: false,
+        form: { submit },
+      });
+
+      expect(submit).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        'Sourcemaps successfully uploaded to Rollbar.'
+      );
+
+      logSpy.mockRestore();
+    });
+
+    it('should log the response body when the upload fails', async function () {
+      expect.assertions(3);
+      const { EventEmitter } = await import('events');
+      const response = new EventEmitter();
+      response.statusCode = 400;
+      response.on = response.addListener.bind(response);
+      response.once = response.once.bind(response);
+      response.emitData = (data) => response.emit('data', data);
+      response.emitEnd = () => response.emit('end');
+
+      const submit = jest.fn((endpoint, cb) => {
+        cb(null, response);
+        process.nextTick(() => {
+          response.emitData(Buffer.from('Bad request', 'utf8'));
+          response.emitEnd();
+        });
+      });
+
+      const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+      await submitSourcemaps({
+        rollbarEndpoint: 'https://api.rollbar.test/api/1/sourcemap',
+        silent: true,
+        form: { submit },
+      });
+
+      expect(submit).toHaveBeenCalledTimes(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        'Sourcemaps failed to upload to Rollbar. The response from the api call is:'
+      );
+      expect(logSpy).toHaveBeenCalledWith('Bad request');
+
+      logSpy.mockRestore();
+    });
+
+    it('should handle missing response.resume when the upload succeeds', async function () {
+      expect.assertions(2);
+      const submit = jest.fn((endpoint, cb) => {
+        cb(null, { statusCode: 200 });
+      });
+
+      await expect(
+        submitSourcemaps({
+          rollbarEndpoint: 'https://api.rollbar.test/api/1/sourcemap',
+          silent: true,
+          form: { submit },
+        })
+      ).resolves.toBeUndefined();
+
+      expect(submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should reject when the upload fails before getting a response', async function () {
+      expect.assertions(1);
+      const submit = jest.fn((endpoint, cb) => {
+        cb(new Error('network failure'));
+      });
+
+      await expect(
+        submitSourcemaps({
+          rollbarEndpoint: 'https://api.rollbar.test/api/1/sourcemap',
+          silent: true,
+          form: { submit },
+        })
+      ).rejects.toThrow('network failure');
+    });
+  });
+
+  describe('writeBundle manual execution', function () {
+    it('should warn via this.warn when silent is false and no sourcemaps are found', async function () {
+      expect.assertions(1);
+      const plugin = rollbarSourcemaps(options);
+      const warn = jest.fn();
+      await plugin.writeBundle.call({ warn, warnOnce: warn }, {}, {});
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it('should skip warnings when silent is true and no sourcemaps are found', async function () {
+      expect.assertions(1);
+      const plugin = rollbarSourcemaps({ ...options, silent: true });
+      const warn = jest.fn();
+      await plugin.writeBundle.call({ warn, warnOnce: warn }, {}, {});
+      expect(warn).not.toHaveBeenCalled();
+    });
+  });
 });
